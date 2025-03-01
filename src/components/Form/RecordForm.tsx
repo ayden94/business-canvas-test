@@ -1,12 +1,12 @@
-import { DatePicker, Form, Input, Select, Checkbox } from 'antd';
-import Label from '../Label';
+import { DatePicker, Input, Select, Checkbox } from 'antd';
 import { SELECT_JOB_OPTIONS } from '../../constants/select';
 import { useForm } from 'sicilian/useForm';
 import { SicilianEvent } from 'sicilian';
+import { type Label as LabelType } from '../../types/Label';
+import Label from '../Label';
+import Form from './Form';
 
-type Label = '이름' | '주소' | '메모' | '가입일' | '직업' | '이메일 수신 동의';
-
-export default function RecordForm({ initValue }: { initValue?: Record<Label, unknown> }) {
+export default function RecordForm({ initValue }: { initValue?: Record<LabelType, unknown> }) {
   const { register } = useForm({
     initValue,
   });
@@ -16,33 +16,46 @@ export default function RecordForm({ initValue }: { initValue?: Record<Label, un
   const checkboxEmail = register({ name: '이메일 수신 동의', type: 'checkbox' });
 
   return (
-    <Form layout="vertical">
-      <Label htmlFor="이름" required>
-        이름
-      </Label>
-      <Input {...register({ name: '이름' })} placeholder="이름" />
+    <Form className="mx-24 mt-10 mb-20 flex flex-col gap-20">
+      <div>
+        <Label className="flex h-40 items-center" htmlFor="이름" required>
+          이름
+        </Label>
+        <Input {...register({ name: '이름' })} placeholder="이름" />
+      </div>
 
-      <Label htmlFor="주소">주소</Label>
-      <Input {...register({ name: '주소' })} placeholder="주소" />
+      <div>
+        <Label className="flex h-40 items-center" htmlFor="주소">
+          주소
+        </Label>
+        <Input {...register({ name: '주소' })} placeholder="주소" />
+      </div>
 
-      <Label htmlFor="메모">메모</Label>
-      <Input.TextArea {...register({ name: '메모' })} placeholder="메모" />
+      <div>
+        <Label className="flex h-40 items-center" htmlFor="메모">
+          메모
+        </Label>
+        <Input.TextArea {...register({ name: '메모' })} placeholder="메모" />
+      </div>
 
-      <Label htmlFor="가입일" required>
-        가입일
-      </Label>
+      <div>
+        <Label className="flex h-40 items-center" htmlFor="가입일" required>
+          가입일
+        </Label>
+        <DatePicker
+          onChange={(value) =>
+            selectCreateAt.onChange({
+              target: { name: '가입일', value: value.toDate() as unknown as string },
+            })
+          }
+          placeholder="가입일"
+        />
+      </div>
 
-      <DatePicker
-        onChange={(value) =>
-          selectCreateAt.onChange({
-            target: { name: '가입일', value: value.toDate() as unknown as string },
-          })
-        }
-        placeholder="가입일"
-      />
-
-      <div className="flex flex-col justify-center align-middle">
-        <Label htmlFor="직업">직업</Label>
+      <div>
+        <Label className="flex h-40 items-center" htmlFor="직업">
+          직업
+        </Label>
         <Select
           style={{ width: 85 }}
           popupMatchSelectWidth={198}
@@ -55,12 +68,16 @@ export default function RecordForm({ initValue }: { initValue?: Record<Label, un
         />
       </div>
 
-      <Label htmlFor="이메일 수신 동의">이메일 수신 동의</Label>
-      <Checkbox
-        id="이메일 수신 동의"
-        name="이메일 수신 동의"
-        onChange={(e) => checkboxEmail.onChange(e as SicilianEvent)}
-      />
+      <div>
+        <Label className="flex h-40 items-center" htmlFor="이메일 수신 동의">
+          이메일 수신 동의
+        </Label>
+        <Checkbox
+          id="이메일 수신 동의"
+          name="이메일 수신 동의"
+          onChange={(e) => checkboxEmail.onChange(e as SicilianEvent)}
+        />
+      </div>
     </Form>
   );
 }
