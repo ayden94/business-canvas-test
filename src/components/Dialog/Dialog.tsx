@@ -7,7 +7,7 @@ import { useDialogWrapperHandler } from '../../hooks/useHandler/Dialog/useDialog
 
 export default function Dialog() {
   const [disabled, setDisabled] = useState(false);
-  const [formValues, setFormValues] = useState({});
+
   const { closeDialog, handleLightDismiss, dialogRef } = useDialogWrapperHandler();
 
   return (
@@ -16,10 +16,8 @@ export default function Dialog() {
       className="backdrop:bg-[rgba(33, 33, 33, 0.4)] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-[8px]"
       onClick={handleLightDismiss}
     >
-      <DialogContext.Provider
-        value={{ closeDialog, disabled, setDisabled, formValues, setFormValues }}
-      >
-        <>{DialogStore.store}</>
+      <DialogContext.Provider value={{ closeDialog, disabled, setDisabled }}>
+        {DialogStore.store && <DialogStore.store />}
       </DialogContext.Provider>
     </dialog>
   );
@@ -38,21 +36,15 @@ Dialog.Title = ({ title }: { title: string }) => {
   );
 };
 
-Dialog.Footer = <ONCLICK_DATA_TYPE extends Record<string, unknown>>({
-  children,
-  onClick,
-}: {
-  children: ReactNode;
-  onClick: (data: ONCLICK_DATA_TYPE) => void;
-}) => {
-  const { closeDialog, disabled, formValues } = useContext(DialogContext);
+Dialog.Footer = ({ children, onClick }: { children: ReactNode; onClick: () => void }) => {
+  const { closeDialog, disabled } = useContext(DialogContext);
 
   return (
     <div className="flex flex-row-reverse gap-8 border-t-1 border-t-black/6 bg-black/6 px-16 py-12">
       <Button
         type="primary"
         onClick={() => {
-          if (formValues) onClick(formValues as ONCLICK_DATA_TYPE);
+          onClick();
           if (closeDialog) closeDialog();
         }}
         disabled={disabled}

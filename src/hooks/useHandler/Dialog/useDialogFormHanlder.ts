@@ -1,23 +1,12 @@
 import { useContext, useEffect } from 'react';
 import { DialogContext } from '../../Contexts/useDialogContext';
 
-export const useDialogFormHandler = <T extends Record<string, unknown>>({
-  disabled,
-  formValue,
-  disabledDependencyProps,
-}: {
-  disabled: boolean;
-  formValue: T;
-  disabledDependencyProps: unknown[];
-}) => {
-  const { setDisabled, setFormValues } = useContext(DialogContext);
+export const useDialogFormHandler = (disabled: boolean, ...disabledDependencyProps: unknown[]) => {
+  const { setDisabled } = useContext(DialogContext);
 
   useEffect(() => {
     if (setDisabled) {
       setDisabled(disabled);
     }
-    if (setFormValues) {
-      setFormValues(formValue);
-    }
-  }, [...disabledDependencyProps, formValue]);
+  }, [...disabledDependencyProps]);
 };

@@ -80,9 +80,11 @@ class RecordEditKebabColumn implements Column {
         DialogStore.store = (
           <>
             <Dialog.Title title="레코드 추가" />
-            <RecordForm initValue={record} />
-            <Dialog.Footer<Record>
-              onClick={(data) => this.useRecordListStore[1]({ type: 'patch', payload: data })}
+            <RecordForm initValue={record} setFormValues={setFormValues} />
+            <Dialog.Footer
+              onClick={() =>
+                this.useRecordListStore[1]({ type: 'patch', payload: this.useFormValues[0] })
+              }
             >
               저장
             </Dialog.Footer>

@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { useForm } from 'sicilian/useForm';
 import { SicilianProvider, useSicilianContext } from 'sicilian/provider';
 import { useDialogFormHandler } from '../../hooks/useHandler/Dialog/useDialogFormHanlder';
+import { Dispatch, SetStateAction, useEffect } from 'react';
 
 export default function RecordForm({
   initValue = {
@@ -16,17 +17,21 @@ export default function RecordForm({
     가입일: '',
     직업: SELECT_JOB_OPTIONS[0],
   },
+  setFormValues,
 }: {
   initValue?: Record;
+  setFormValues: Dispatch<SetStateAction<Record | undefined>>;
 }) {
-  const { register, getValues } = useForm({ initValue });
+  const { register, getValues } = useForm({
+    initValue,
+  });
   const formValues = getValues();
 
-  useDialogFormHandler({
-    disabled: !formValues.가입일 || !formValues.이름,
-    formValue: formValues,
-    disabledDependencyProps: [formValues],
-  });
+  useEffect(() => {
+    setFormValues(formValues);
+  }, [formValues]);
+
+  useDialogFormHandler(!formValues.가입일 || !formValues.이름, formValues);
 
   return (
     <SicilianProvider value={{ register, name: '이름' }}>

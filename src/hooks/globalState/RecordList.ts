@@ -3,7 +3,7 @@ import { persist, reducer } from 'caro-kann/middleware';
 import { Record } from '../../types/Record';
 
 class RecordListStoreFactory {
-  private apiUrl: string = import.meta.env.STORAGE;
+  private apiUrl: string = import.meta.env.VITE_STORAGE;
 
   private reducer = (
     store: Record[],
@@ -11,16 +11,20 @@ class RecordListStoreFactory {
       type,
       payload,
     }:
-      | { type: 'patch' | 'add'; payload: Record }
+      | { type: 'patch' | 'add'; payload: Record | undefined }
       | { type: 'delete'; payload: Pick<Record, 'key'> },
   ) => {
+    console.log(type, payload);
+
     switch (type) {
       case 'patch':
+        if (!payload) return store;
         return store.map((record) =>
           record.key === payload.key ? { ...record, ...payload } : record,
         );
 
       case 'add':
+        if (!payload) return store;
         return [...store, payload];
 
       case 'delete':
@@ -31,13 +35,14 @@ class RecordListStoreFactory {
     }
   };
 
-  generate(initValue: Record[]) {
+  generate = (initValue: Record[]) => {
+    console.log(this.apiUrl);
     if (this.apiUrl === 'in-memory') {
       return create(reducer(this.reducer, initValue));
     } else {
       return create(reducer(this.reducer, persist(initValue, { local: 'recordList' })));
     }
-  }
+  };
 }
 
 export const useRecordListStore = new RecordListStoreFactory().generate([

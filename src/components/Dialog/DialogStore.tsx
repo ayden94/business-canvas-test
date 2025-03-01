@@ -1,14 +1,16 @@
-import { ReactNode } from 'react';
+// import { ReactNode } from 'react';
+
+import { JSX } from 'react';
 
 export class DialogStore {
-  static _store: ReactNode;
+  static _store: (() => JSX.Element) | undefined;
   static listeners: Function[] = [];
 
   static get store() {
     return this._store;
   }
 
-  static set store(value: ReactNode) {
+  static set store(value: (() => JSX.Element) | undefined) {
     if (value !== undefined && this._store !== undefined) return;
 
     this._store = value;
