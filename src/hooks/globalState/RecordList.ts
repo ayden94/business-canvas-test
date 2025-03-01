@@ -1,15 +1,30 @@
 import { create } from 'caro-kann';
-import { persist } from 'caro-kann/middleware';
+import { persist, reducer } from 'caro-kann/middleware';
 import { Record } from '../../types/Record';
 
 class RecordListStoreFactory {
-  apiUrl: string = import.meta.env.STORAGE;
+  private apiUrl: string = import.meta.env.STORAGE;
+
+  private reducer = (store: Record[], { type, payload }: { type: string; payload: Record }) => {
+    switch (type) {
+      case 'patch':
+        return store.map((record) =>
+          record.key === payload.key ? { ...record, ...payload } : record,
+        );
+
+      case 'add':
+        return [...store, payload];
+
+      default:
+        return store;
+    }
+  };
 
   generate(initValue: Record[]) {
     if (this.apiUrl === 'in-memory') {
-      return create(initValue);
+      return create(reducer(this.reducer, initValue));
     } else {
-      return create(persist(initValue, { local: 'recordList' }));
+      return create(reducer(this.reducer, persist(initValue, { local: 'recordList' })));
     }
   }
 }
