@@ -1,4 +1,4 @@
-import { SELECT_JOB_OPTIONS } from '../constants/select';
+import { SELECT_JOB_OPTIONS } from '../constants/SELECT_JOB_OPTIONS';
 
 export type Record = {
   key: `${string}-${string}-${string}-${string}-${string}`;

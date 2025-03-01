@@ -1,13 +1,12 @@
 import { DatePicker, Input, Select, Checkbox } from 'antd';
-import { SELECT_JOB_OPTIONS } from '../../constants/select';
+import { SELECT_JOB_OPTIONS } from '../../constants/SELECT_JOB_OPTIONS';
 import Label from '../Label';
 import Form from './Form';
 import { Record } from '../../types/Record';
 import dayjs from 'dayjs';
 import { useForm } from 'sicilian/useForm';
-import { useContext, useEffect } from 'react';
-import { DialogContext } from '../../hooks/Contexts/useDialogContext';
 import { SicilianProvider, useSicilianContext } from 'sicilian/provider';
+import { useDialogFormHandler } from '../../hooks/useHandler/Dialog/useDialogFormHanlder';
 
 export default function RecordForm({
   initValue = {
@@ -21,14 +20,13 @@ export default function RecordForm({
   initValue?: Record;
 }) {
   const { register, getValues } = useForm({ initValue });
-  const { setDisabled } = useContext(DialogContext);
   const formValues = getValues();
 
-  useEffect(() => {
-    if (setDisabled) {
-      setDisabled(!formValues.가입일 || !formValues.이름);
-    }
-  }, [formValues]);
+  useDialogFormHandler({
+    disabled: !formValues.가입일 || !formValues.이름,
+    formValue: formValues,
+    disabledDependencyProps: [formValues],
+  });
 
   return (
     <SicilianProvider value={{ register, name: '이름' }}>

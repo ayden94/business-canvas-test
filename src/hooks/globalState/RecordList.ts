@@ -5,7 +5,15 @@ import { Record } from '../../types/Record';
 class RecordListStoreFactory {
   private apiUrl: string = import.meta.env.STORAGE;
 
-  private reducer = (store: Record[], { type, payload }: { type: string; payload: Record }) => {
+  private reducer = (
+    store: Record[],
+    {
+      type,
+      payload,
+    }:
+      | { type: 'patch' | 'add'; payload: Record }
+      | { type: 'delete'; payload: Pick<Record, 'key'> },
+  ) => {
     switch (type) {
       case 'patch':
         return store.map((record) =>
@@ -14,6 +22,9 @@ class RecordListStoreFactory {
 
       case 'add':
         return [...store, payload];
+
+      case 'delete':
+        return store.filter((record) => record.key !== payload.key);
 
       default:
         return store;

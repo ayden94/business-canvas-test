@@ -2,9 +2,9 @@ import { Checkbox, MenuProps, TableProps } from 'antd';
 import { Label } from '../types/Label';
 import { Record } from '../types/Record';
 import { Key, ReactElement } from 'react';
-import KebabMenu from '../components/Kebab';
 import { useRecordListStore } from '../hooks/globalState/RecordList';
 import { DialogStore } from '../components/Dialog/DialogStore';
+import KebabMenu from '../components/Kebab';
 import Dialog from '../components/Dialog/Dialog';
 import RecordForm from '../components/Form/RecordForm';
 
@@ -81,14 +81,16 @@ class RecordEditKebabColumn implements Column {
           <>
             <Dialog.Title title="레코드 추가" />
             <RecordForm initValue={record} />
-            <Dialog.Footer disabled={false} onClick={() => {}}>
+            <Dialog.Footer<Record>
+              onClick={(data) => this.useRecordListStore[1]({ type: 'patch', payload: data })}
+            >
               저장
             </Dialog.Footer>
           </>
         );
       } else if (e.key === '삭제') {
         if (confirm('정말 삭제하시겠습니까?')) {
-          this.useRecordListStore[1]((store) => store.filter((record) => record.key !== value));
+          this.useRecordListStore[1]({ type: 'delete', payload: { key: record.key } });
         }
       }
     };

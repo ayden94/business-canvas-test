@@ -1,24 +1,14 @@
 import { MdClose } from '@react-icons/all-files/md/MdClose';
 import { Button } from 'antd';
-import { createRef, MouseEvent, ReactNode, useContext, useEffect } from 'react';
+import { ReactNode, useContext, useState } from 'react';
 import { DialogStore } from './DialogStore';
 import { DialogContext } from '../../hooks/Contexts/useDialogContext';
+import { useDialogWrapperHandler } from '../../hooks/useHandler/Dialog/useDialogWrapperHandler';
 
-export default function Dialog({}: {}) {
-  const closeDialog = () => (DialogStore.store = undefined);
-  const dialogRef = createRef<HTMLDialogElement>();
-  const handleLightDismiss = (e: MouseEvent) => {
-    if ((e.target as HTMLDialogElement).nodeName === 'DIALOG') closeDialog();
-  };
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-
-    if (!dialog) return;
-
-    dialog.showModal();
-    return () => dialog.close();
-  }, [dialogRef]);
+export default function Dialog() {
+  const [disabled, setDisabled] = useState(false);
+  const [formValues, setFormValues] = useState({});
+  const { closeDialog, handleLightDismiss, dialogRef } = useDialogWrapperHandler();
 
   return (
     <dialog
@@ -26,7 +16,9 @@ export default function Dialog({}: {}) {
       className="backdrop:bg-[rgba(33, 33, 33, 0.4)] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-[8px]"
       onClick={handleLightDismiss}
     >
-      <DialogContext.Provider value={{ closeDialog }}>
+      <DialogContext.Provider
+        value={{ closeDialog, disabled, setDisabled, formValues, setFormValues }}
+      >
         <>{DialogStore.store}</>
       </DialogContext.Provider>
     </dialog>
@@ -46,25 +38,22 @@ Dialog.Title = ({ title }: { title: string }) => {
   );
 };
 
-Dialog.Footer = ({
+Dialog.Footer = <ONCLICK_DATA_TYPE extends Record<string, unknown>>({
   children,
-  disabled,
   onClick,
 }: {
   children: ReactNode;
-  disabled?: boolean;
-  onClick: (e: MouseEvent) => void;
+  onClick: (data: ONCLICK_DATA_TYPE) => void;
 }) => {
-  const { closeDialog } = useContext(DialogContext);
+  const { closeDialog, disabled, formValues } = useContext(DialogContext);
 
   return (
     <div className="flex flex-row-reverse gap-8 border-t-1 border-t-black/6 bg-black/6 px-16 py-12">
       <Button
         type="primary"
-        onClick={(e) => {
-          onClick(e);
-
-          closeDialog();
+        onClick={() => {
+          if (formValues) onClick(formValues as ONCLICK_DATA_TYPE);
+          if (closeDialog) closeDialog();
         }}
         disabled={disabled}
       >
