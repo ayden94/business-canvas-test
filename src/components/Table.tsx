@@ -14,7 +14,6 @@ export default function Table<T>({
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log('선택된 키:', newSelectedRowKeys); // 디버깅
     if (newSelectedRowKeys) {
       setSelectedRowKeys(newSelectedRowKeys);
     }
