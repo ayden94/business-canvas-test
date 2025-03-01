@@ -15,8 +15,12 @@ export default function RecordForm({ initValue }: { initValue?: Record<LabelType
   const selectJob = register({ name: '직업', type: 'radio' });
   const checkboxEmail = register({ name: '이메일 수신 동의', type: 'checkbox' });
 
+  const handlePopupContainer = (trigger: HTMLElement) => {
+    return trigger;
+  };
+
   return (
-    <Form className="mx-24 mt-10 mb-20 flex flex-col gap-20">
+    <Form className="mx-24 mt-10 mb-20 flex w-520 flex-col gap-20">
       <div>
         <Label className="flex h-40 items-center" htmlFor="이름" required>
           이름
@@ -43,6 +47,8 @@ export default function RecordForm({ initValue }: { initValue?: Record<LabelType
           가입일
         </Label>
         <DatePicker
+          showToday={false}
+          getPopupContainer={handlePopupContainer}
           onChange={(value) =>
             selectCreateAt.onChange({
               target: { name: '가입일', value: value.toDate() as unknown as string },
@@ -59,6 +65,7 @@ export default function RecordForm({ initValue }: { initValue?: Record<LabelType
         <Select
           style={{ width: 85 }}
           popupMatchSelectWidth={198}
+          getPopupContainer={handlePopupContainer}
           onChange={(value) => selectJob.onChange({ target: { name: '직업', value } })}
           options={SELECT_JOB_OPTIONS.map((option) => ({
             value: option,
@@ -72,6 +79,7 @@ export default function RecordForm({ initValue }: { initValue?: Record<LabelType
         <Label className="flex h-40 items-center" htmlFor="이메일 수신 동의">
           이메일 수신 동의
         </Label>
+
         <Checkbox
           id="이메일 수신 동의"
           name="이메일 수신 동의"
