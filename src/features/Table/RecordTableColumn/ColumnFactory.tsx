@@ -63,17 +63,23 @@ class RecordEditKebabColumn implements Column {
       danger: true,
     },
   ];
-  private handleRecordEditMenuClick: (value: string, record: Record) => MenuProps['onClick'] =
+  private handleRecordEditMenuClick = (record: Record) => {
+    DialogStore.store = {
+      component: DialogRecordFormSlot,
+      props: { title: '회원 정보 수정', type: 'patch', initValue: record },
+    };
+  };
+  private handleRecordDeleteMenuClick = (record: Record) => {
+    if (confirm('정말 삭제하시겠습니까?')) {
+      this.useRecordListStore[1]({ type: 'delete', payload: { key: record.key } });
+    }
+  };
+  private handleRecordMenuClick: (value: string, record: Record) => MenuProps['onClick'] =
     (_: string, record: Record) => (e) => {
       if (e.key === '수정') {
-        DialogStore.store = {
-          component: DialogRecordFormSlot,
-          props: { title: '회원 정보 수정', type: 'patch', initValue: record },
-        };
+        this.handleRecordEditMenuClick(record);
       } else if (e.key === '삭제') {
-        if (confirm('정말 삭제하시겠습니까?')) {
-          this.useRecordListStore[1]({ type: 'delete', payload: { key: record.key } });
-        }
+        this.handleRecordDeleteMenuClick(record);
       }
     };
 
@@ -88,7 +94,7 @@ class RecordEditKebabColumn implements Column {
             <KebabMenu
               className="w-180"
               items={this.items}
-              handleMenuClick={this.handleRecordEditMenuClick(value, record)}
+              handleMenuClick={this.handleRecordMenuClick(value, record)}
             />
           </>
         );

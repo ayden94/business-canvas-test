@@ -1,18 +1,23 @@
 import { JSX } from 'react';
 
+type StoreItem = {
+  component: (props: any) => JSX.Element;
+  props: any;
+};
+
 export class DialogStore {
-  static _store: { component: (props: any) => JSX.Element; props: any } | undefined;
+  static _store: StoreItem | undefined;
   static listeners: Function[] = [];
 
   static get store() {
     return this._store;
   }
 
-  static set store(value: { component: (props: any) => JSX.Element; props: any } | undefined) {
+  static set store(value: StoreItem | undefined) {
     if (value !== undefined && this._store !== undefined) return;
 
     this._store = value;
-    this.notifyListeners();
+    this.listeners.forEach((listener) => listener());
   }
 
   static addListener(listener: Function) {
@@ -21,9 +26,5 @@ export class DialogStore {
 
   static removeListener(listener: Function) {
     this.listeners = this.listeners.filter((l) => l !== listener);
-  }
-
-  static notifyListeners() {
-    this.listeners.forEach((listener) => listener());
   }
 }

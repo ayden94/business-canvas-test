@@ -1,7 +1,7 @@
 import { createRef, MouseEvent, useEffect } from 'react';
 import { DialogStore } from '../../../components/Dialog/DialogStore';
 
-export const useDialogWrapperHandler = () => {
+export const useDialogHandler = () => {
   const closeDialog = () => (DialogStore.store = undefined);
 
   const dialogRef = createRef<HTMLDialogElement>();

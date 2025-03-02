@@ -3,12 +3,12 @@ import { Button } from 'antd';
 import { ReactNode, useContext, useState } from 'react';
 import { DialogStore } from './DialogStore';
 import { DialogContext } from '../../hooks/Contexts/useDialogContext';
-import { useDialogWrapperHandler } from '../../hooks/useHandler/Dialog/useDialogWrapperHandler';
+import { useDialogHandler } from '../../hooks/useHandler/Dialog/useDialogHandler';
 
 export default function Dialog() {
   const [disabled, setDisabled] = useState(false);
 
-  const { closeDialog, handleLightDismiss, dialogRef } = useDialogWrapperHandler();
+  const { closeDialog, handleLightDismiss, dialogRef } = useDialogHandler();
 
   return (
     <dialog

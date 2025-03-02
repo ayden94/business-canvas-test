@@ -3,18 +3,15 @@ import { DialogStore } from './DialogStore';
 import Dialog from './Dialog';
 
 export function DialogWrapper({ children }: { children: ReactElement | ReactElement[] }) {
-  const [_, rerenderingTrigger] = useState(false);
+  const [_, renderingTrigger] = useState(false);
 
   useEffect(() => {
     const handleStoreChange = () => {
-      rerenderingTrigger((prev) => !prev);
+      renderingTrigger((prev) => !prev);
     };
 
     DialogStore.addListener(handleStoreChange);
-
-    return () => {
-      DialogStore.removeListener(handleStoreChange);
-    };
+    return () => DialogStore.removeListener(handleStoreChange);
   }, []);
 
   return (

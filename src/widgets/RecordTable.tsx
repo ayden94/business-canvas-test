@@ -9,20 +9,20 @@ import { getColumnByRecords } from '../features/Table/RecordTableColumn/getColum
 export default function RecordTable() {
   const [recordList] = useRecordListStore();
 
+  const handleClick = () => {
+    DialogStore.store = {
+      component: DialogRecordFormSlot,
+      props: { title: '회원 생성', type: 'add' },
+    };
+  };
+
   return (
     <Table
       title={
         <div className="flex justify-between align-middle">
           <span className="flex items-center text-[16px]/[22px] font-semibold">회원 목록</span>
-          <Button
-            type="primary"
-            onClick={() =>
-              (DialogStore.store = {
-                component: DialogRecordFormSlot,
-                props: { title: '회원 생성', type: 'add' },
-              })
-            }
-          >
+
+          <Button type="primary" onClick={handleClick}>
             <FaPlus />
             추가
           </Button>
