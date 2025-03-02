@@ -22,20 +22,31 @@ export const tableFilterDropdown =
     };
 
     return (
-      <Menu>
-        {dataList
-          .filter((data) => data[key as keyof T])
-          .map((data) => String(data[key as keyof T]))
-          .map((name) => (
-            <Menu.Item key={name}>
-              <Checkbox
-                checked={(selectedKeys as string[]).includes(name)}
-                onChange={(e) => handleChange(e.target.checked, name)}
-              >
-                {name}
-              </Checkbox>
-            </Menu.Item>
-          ))}
-      </Menu>
+      <Menu
+        items={removeDuplicateInColumnFilterArray(dataList, key).map((name) => ({
+          key: name,
+          label: (
+            <Checkbox
+              checked={(selectedKeys as string[]).includes(name)}
+              onChange={(e) => handleChange(e.target.checked, name)}
+            >
+              {name}
+            </Checkbox>
+          ),
+        }))}
+      />
     );
   };
+
+const removeDuplicateInColumnFilterArray = <T,>(array: T[], key: keyof T) => {
+  return Array.from(
+    new Set(
+      array
+        .filter((data) => (typeof data[key] === 'string' ? data[key] : true))
+        .map((data) => JSON.stringify(data[key])),
+    ),
+  ).map((item) => {
+    const parsedItem = JSON.parse(item);
+    return typeof parsedItem === 'string' ? parsedItem : String(parsedItem);
+  });
+};
