@@ -1,5 +1,3 @@
-// import { ReactNode } from 'react';
-
 import { JSX } from 'react';
 
 export class DialogStore {
