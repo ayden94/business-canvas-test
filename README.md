@@ -1,6 +1,6 @@
 # 요구사항 분석
 
-저는 이 프로젝트의 요구사항을 큰 틀에서 두 가지 방향으로 이해했습니다. 한 가지는 어디서든 전역적으로 호출할 수 있는 Dialog의 존재입니다. Table이 어떻게 구현될지 아직 확실하지 않은 만큼 최대한 stateless하게 Dialog를 구현하면 좋겠다 생각했습니다. 두 번째는 Table과 Column입니다. ant design 라이브러리에서 Table 컴포넌트는 Column에 따라 date를 자동으로 처리합니다. 때문에 column를 어딘가에서는 처리해야 하는데, 이걸 동적으로 관리할 수 있도록 미리 구조를 짜두면 좋겠다고 생각했습니다. 
+저는 이 프로젝트의 요구사항을 큰 틀에서 세 가지 방향으로 이해했습니다. 한 가지는 어디서든 전역적으로 호출할 수 있는 Dialog의 존재입니다. Table이 어떻게 구현될지 아직 확실하지 않은 만큼 최대한 stateless하게 Dialog를 구현하면 좋겠다 생각했습니다. 두 번째는 Table과 Column입니다. ant design 라이브러리에서 Table 컴포넌트는 Column에 따라 date를 자동으로 처리합니다. 때문에 column를 어딘가에서는 처리해야 하는데, 이걸 동적으로 관리할 수 있도록 미리 구조를 짜두면 좋겠다고 생각했습니다. 마지막으로 개발 서버를 켤 때 env를 참조하여 레코드를 처리하는 방법을 결정해야한다는 것인데, 이건 추상 팩터리 패턴으로 간단히 처리할 수 있을 거라 생각했습니다.
 
 
 ## Dialog
@@ -154,10 +154,66 @@ export const getColumnByRecords = <T extends Array<Record>>(
 };
 ```
 
+## RecordList 전역 상태
 
+추상 팩터리 패턴을 사용하면 개발 서버를 실행할 때 env를 참조하여 적절한 처리 방식을 결정할 수 있습니다. 추상 팩터리 패턴에서 리턴되는 결과물은 타입상 동일하므로 일단 한 번 generate 되면 이후로는 이것이 in-memory에 저장되어야 하는지 local-storage에 저장되어야하는지를 신경쓰지 않고 전역 상태를 사용할 수 있습니다. 전역 상태는 제가 작성한 라이브러리 Caro-kann을 사용하여 구현하였으며, persist 미들웨어를 통해 로컬 스토리지 보관을 처리하였습니다. 또한 reducer 미들웨어를 사용해 useReducer처럼 동작하도록 했습니다.
 
+```tsx
+class RecordListStoreFactory {
+  private STORAGE_TYPE: 'in-memory' | 'local-storage' = import.meta.env.VITE_STORAGE;
 
+  private reducer = (
+    store: Record[],
+    {
+      type,
+      payload,
+    }:
+      | { type: 'patch' | 'add'; payload: Record | undefined }
+      | { type: 'delete'; payload: Pick<Record, 'key'> },
+  ) => {
+    switch (type) {
+      case 'patch':
+        if (!payload) return store;
+        return store.map((record) =>
+          record.key === payload.key ? { ...record, ...payload } : record,
+        );
 
+      case 'add':
+        if (!payload) return store;
+        return [...store, payload];
+
+      case 'delete':
+        return store.filter((record) => record.key !== payload.key);
+
+      default:
+        return store;
+    }
+  };
+
+  generate = (initValue: Record[]) => {
+    switch (this.STORAGE_TYPE) {
+      case 'in-memory':
+        return create(reducer(this.reducer, initValue));
+
+      case 'local-storage':
+        return create(reducer(this.reducer, persist(initValue, { local: 'recordList' })));
+
+      default:
+        throw new Error('Invalid STORAGE_TYPE');
+    }
+  };
+}
+```
+
+```tsx
+<Dialog.Footer
+  onClick={() => {
+    dispatcher({ type: 'add', payload: formValues });
+  }}
+>
+  저장
+</Dialog.Footer>
+```
 
 
 
