@@ -1,35 +1,11 @@
-import { Checkbox, MenuProps, TableProps } from 'antd';
-import { Label } from '../types/Label';
-import { Record } from '../types/Record';
 import { Key, ReactElement } from 'react';
-import { useRecordListStore } from '../hooks/globalState/RecordList';
-import { DialogStore } from '../components/Dialog/DialogStore';
-import KebabMenu from '../components/Kebab';
-import { removeDuplicateInColumnFilterArray } from '../utils/removeDuplicateInColumnFilterArray';
-import DialogRecordFormSlot from '../components/Dialog/DialogSlot/DialogRecordFormSlot';
-
-export const getColumnByRecords = <T extends Array<Record>>(
-  records: T,
-): TableProps<Record>['columns'] => {
-  const columns: TableProps<Record>['columns'] = [];
-
-  // 추후 전역 상태로 분리 가능
-  const ColumnList = [
-    '이름',
-    '주소',
-    '메모',
-    '가입일',
-    '직업',
-    '이메일 수신 동의',
-    '레코드 수정 버튼',
-  ];
-
-  for (const key of ColumnList) {
-    columns.push(new ColumnFactory().createColumn(key as Label, records));
-  }
-
-  return columns;
-};
+import { Record } from '../../../types/Record';
+import { MenuProps, Checkbox } from 'antd';
+import DialogRecordFormSlot from '../../../components/Dialog/DialogSlot/DialogRecordFormSlot';
+import { DialogStore } from '../../../components/Dialog/DialogStore';
+import KebabMenu from '../../../components/Kebab';
+import { useRecordListStore } from '../../../hooks/globalState/RecordList';
+import { tableFilterDropdown } from '../TableFilterDropdown';
 
 interface IColumnConfig {
   title: string;
@@ -38,19 +14,20 @@ interface IColumnConfig {
   filters?: { text: string; value: string }[];
   onFilter?: (value: boolean | Key, record: Record) => boolean;
   render?: (value: string, record: Record, index: number) => ReactElement;
+  filterDropdown?: any;
 }
 
 interface Column {
   exec(key: string, records: Record[]): IColumnConfig;
 }
 
-class ColumnFactory {
+export class ColumnFactory {
   private columnMap: Map<string, new () => Column> = new Map([
     ['이메일 수신 동의', EmailAgreementColumn],
     ['레코드 수정 버튼', RecordEditKebabColumn],
   ]);
 
-  createColumn(key: string, records: Record[]): IColumnConfig {
+  createColumn(key: keyof Record, records: Record[]): IColumnConfig {
     const ColumnClass = this.columnMap.get(key);
 
     if (ColumnClass) {
@@ -58,6 +35,18 @@ class ColumnFactory {
     } else {
       return new BasicColumn().exec(key, records);
     }
+  }
+}
+
+class BasicColumn implements Column {
+  exec(key: keyof Record, records: Record[]): IColumnConfig {
+    return {
+      title: key,
+      dataIndex: key,
+      filterDropdown: tableFilterDropdown(records, key),
+      onFilter: (value: boolean | Key, record: Record) =>
+        String(record[key as keyof Record]).includes(value as string),
+    };
   }
 }
 
@@ -108,28 +97,15 @@ class RecordEditKebabColumn implements Column {
 }
 
 class EmailAgreementColumn implements Column {
-  exec(key: string, records: Record[]): IColumnConfig {
+  exec(key: keyof Record, records: Record[]): IColumnConfig {
     return {
       title: key,
       dataIndex: key,
       width: 150,
-      filters: removeDuplicateInColumnFilterArray(records, key),
+      filterDropdown: tableFilterDropdown(records, key),
       onFilter: (value: boolean | Key, record: Record) =>
         String(record[key as keyof Record]).includes(value as string),
       render: (text) => <Checkbox checked={text as unknown as boolean} />,
-    };
-  }
-}
-
-class BasicColumn implements Column {
-  exec(key: string, records: Record[]): IColumnConfig {
-    console.log(removeDuplicateInColumnFilterArray(records, key));
-    return {
-      title: key,
-      dataIndex: key,
-      filters: removeDuplicateInColumnFilterArray(records, key),
-      onFilter: (value: boolean | Key, record: Record) =>
-        String(record[key as keyof Record]).includes(value as string),
     };
   }
 }
