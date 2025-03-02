@@ -1,13 +1,12 @@
 import { Checkbox, MenuProps, TableProps } from 'antd';
 import { Label } from '../types/Label';
 import { Record } from '../types/Record';
-import { Key, ReactElement, useState } from 'react';
+import { Key, ReactElement } from 'react';
 import { useRecordListStore } from '../hooks/globalState/RecordList';
 import { DialogStore } from '../components/Dialog/DialogStore';
 import KebabMenu from '../components/Kebab';
-import Dialog from '../components/Dialog/Dialog';
-import RecordForm from '../components/Form/RecordForm';
 import { removeDuplicateInColumnFilterArray } from '../utils/removeDuplicateInColumnFilterArray';
+import DialogRecordFormSlot from '../components/Dialog/DialogSlot/DialogRecordFormSlot';
 
 export const getColumnByRecords = <T extends Array<Record>>(
   records: T,
@@ -76,11 +75,11 @@ class RecordEditKebabColumn implements Column {
     },
   ];
   private handleRecordEditMenuClick: (value: string, record: Record) => MenuProps['onClick'] =
-    (value: string, record: Record) => (e) => {
+    (_: string, record: Record) => (e) => {
       if (e.key === '수정') {
         DialogStore.store = {
-          component: RFC,
-          props: { title: '레코드 수정', type: 'patch', initValue: record },
+          component: DialogRecordFormSlot,
+          props: { title: '회원 정보 수정', type: 'patch', initValue: record },
         };
       } else if (e.key === '삭제') {
         if (confirm('정말 삭제하시겠습니까?')) {
@@ -113,6 +112,7 @@ class EmailAgreementColumn implements Column {
     return {
       title: key,
       dataIndex: key,
+      width: 150,
       filters: removeDuplicateInColumnFilterArray(records, key),
       onFilter: (value: boolean | Key, record: Record) =>
         String(record[key as keyof Record]).includes(value as string),
@@ -132,32 +132,4 @@ class BasicColumn implements Column {
         String(record[key as keyof Record]).includes(value as string),
     };
   }
-}
-
-// TODO: RFC 컴포넌트 분리
-function RFC({
-  title,
-  type,
-  initValue,
-}: {
-  title: string;
-  type: 'patch' | 'add';
-  initValue?: Record;
-}) {
-  const [_, dispatcher] = useRecordListStore();
-  const [formValues, setFormValues] = useState<Record>();
-
-  return (
-    <>
-      <Dialog.Title title={title} />
-      <RecordForm setFormValues={setFormValues} initValue={initValue} />
-      <Dialog.Footer
-        onClick={() => {
-          dispatcher({ type: type, payload: formValues });
-        }}
-      >
-        저장
-      </Dialog.Footer>
-    </>
-  );
 }
