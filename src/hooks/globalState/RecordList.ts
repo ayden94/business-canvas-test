@@ -3,7 +3,7 @@ import { persist, reducer } from 'caro-kann/middleware';
 import { Record } from '../../types/Record';
 
 class RecordListStoreFactory {
-  private apiUrl: string = import.meta.env.VITE_STORAGE;
+  private STORAGE_TYPE: 'in-memory' | 'local-storage' = import.meta.env.VITE_STORAGE;
 
   private reducer = (
     store: Record[],
@@ -34,11 +34,15 @@ class RecordListStoreFactory {
   };
 
   generate = (initValue: Record[]) => {
-    console.log(this.apiUrl);
-    if (this.apiUrl === 'in-memory') {
-      return create(reducer(this.reducer, initValue));
-    } else {
-      return create(reducer(this.reducer, persist(initValue, { local: 'recordList' })));
+    switch (this.STORAGE_TYPE) {
+      case 'in-memory':
+        return create(reducer(this.reducer, initValue));
+
+      case 'local-storage':
+        return create(reducer(this.reducer, persist(initValue, { local: 'recordList' })));
+
+      default:
+        throw new Error('Invalid STORAGE_TYPE');
     }
   };
 }
