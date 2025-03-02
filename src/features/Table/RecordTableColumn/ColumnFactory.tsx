@@ -86,6 +86,7 @@ class RecordEditKebabColumn implements Column {
         return (
           <>
             <KebabMenu
+              className="w-180"
               items={this.items}
               handleMenuClick={this.handleRecordEditMenuClick(value, record)}
             />
