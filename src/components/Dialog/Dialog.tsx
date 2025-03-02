@@ -17,7 +17,7 @@ export default function Dialog() {
       onClick={handleLightDismiss}
     >
       <DialogContext.Provider value={{ closeDialog, disabled, setDisabled }}>
-        {DialogStore.store && <DialogStore.store />}
+        {DialogStore.store && <DialogStore.store.component {...DialogStore.store.props} />}
       </DialogContext.Provider>
     </dialog>
   );
@@ -43,11 +43,11 @@ Dialog.Footer = ({ children, onClick }: { children: ReactNode; onClick: () => vo
     <div className="flex flex-row-reverse gap-8 border-t-1 border-t-black/6 bg-black/6 px-16 py-12">
       <Button
         type="primary"
+        disabled={disabled}
         onClick={() => {
           onClick();
-          if (closeDialog) closeDialog();
+          closeDialog();
         }}
-        disabled={disabled}
       >
         {children}
       </Button>
