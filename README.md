@@ -93,7 +93,7 @@ export class DialogStore {
 }
 ```
 
-Dialog를 호출하고 싶을 때는 DialogStore.store 메서드를 사용합니다.
+Dialog를 호출하고 싶을 때는 DialogStore.store 메서드를 사용합니다. 덕분에 Dialog는 컴포넌트 랜더링을 위한 state 조건이나 rules of hooks에서 벗어나 조금 더 유연하게 호출될 수 있습니다.
 
 ```tsx
   const handleClick = () => {
@@ -104,8 +104,86 @@ Dialog를 호출하고 싶을 때는 DialogStore.store 메서드를 사용합니
   };
 ```
 
-
-
-
-
 ## Table
+
+ant design 라이브러리의 Table 컴포넌트는 columns라는 프로퍼티를 통해 전체 테이블을 랜더링합니다. 따라서 columns 생성을 적절하게 추상화하는 것이 무엇보다 중요하다고 생각했습니다. 제가 내린 결론은 columns의 각 column 생성을 각 클래스로 분리하고, ColumnFactory를 사용해 필요한 column만 생성하도록 하는 것이었습니다.
+
+```tsx
+export class ColumnFactory {
+  private columnMap: Map<string, new () => Column> = new Map([
+    ['이메일 수신 동의', EmailAgreementColumn],
+    ['레코드 수정 버튼', RecordEditKebabColumn],
+  ]);
+
+  createColumn(key: keyof Record, records: Record[]): IColumnConfig {
+    const ColumnClass = this.columnMap.get(key);
+
+    if (ColumnClass) {
+      return new ColumnClass().exec(key, records);
+    } else {
+      return new BasicColumn().exec(key, records);
+    }
+  }
+}
+```
+
+이 ColumnFactory 클래스는 getColumnByRecords라는 이름의 함수에서 호출됩니다. 이 함수는 ColumnList를 근거로 필요한 컬럼을 생성합니다. 이처럼 생성과 사용이 분리되면, 컬럼 생성 로직을 수정하거나 확장할 때 ColumnFactory 클래스만 변경하면 되며, getColumnByRecords 함수는 그대로 유지될 수 있어 코드의 재사용성과 유지보수성이 높아집니다. 또한, 컬럼의 생성과 관련된 로직을 한 곳에 집중시킴으로써, 새로운 컬럼이 추가될 때마다 함수나 클래스의 변경 없이 쉽게 확장할 수 있는 구조를 제공합니다.
+
+```tsx
+export const getColumnByRecords = <T extends Array<Record>>(
+  records: T,
+): TableProps<Record>['columns'] => {
+  const columns: TableProps<Record>['columns'] = [];
+
+  // 추후 전역 상태로 분리 가능
+  const ColumnList = [
+    '이름',
+    '주소',
+    '메모',
+    '가입일',
+    '직업',
+    '이메일 수신 동의',
+    '레코드 수정 버튼',
+  ];
+
+  for (const key of ColumnList) {
+    columns.push(new ColumnFactory().createColumn(key as Label, records));
+  }
+
+  return columns;
+};
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
