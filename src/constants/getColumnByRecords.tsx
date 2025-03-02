@@ -7,6 +7,7 @@ import { DialogStore } from '../components/Dialog/DialogStore';
 import KebabMenu from '../components/Kebab';
 import Dialog from '../components/Dialog/Dialog';
 import RecordForm from '../components/Form/RecordForm';
+import { removeDuplicateInColumnFilterArray } from '../utils/removeDuplicateInColumnFilterArray';
 
 export const getColumnByRecords = <T extends Array<Record>>(
   records: T,
@@ -106,27 +107,6 @@ class RecordEditKebabColumn implements Column {
     };
   }
 }
-
-const removeDuplicateInColumnFilterArray = (array: any[], key: string) => {
-  return Array.from(
-    new Set(
-      array
-        .map((data) =>
-          JSON.stringify({
-            text: data[key as keyof Record],
-            value: data[key as keyof Record],
-          }),
-        )
-        .map((item) => JSON.stringify(item)),
-    ),
-  )
-    .map((item) => {
-      return JSON.parse(JSON.parse(item));
-    })
-    .map((item: { text: any; value: any }) => {
-      return { text: String(item['text']), value: String(item['value']) };
-    });
-};
 
 class EmailAgreementColumn implements Column {
   exec(key: string, records: Record[]): IColumnConfig {

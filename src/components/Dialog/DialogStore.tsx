@@ -3,14 +3,14 @@
 import { JSX } from 'react';
 
 export class DialogStore {
-  static _store: (() => JSX.Element) | undefined;
+  static _store: { component: (props: any) => JSX.Element; props: any } | undefined;
   static listeners: Function[] = [];
 
   static get store() {
     return this._store;
   }
 
-  static set store(value: (() => JSX.Element) | undefined) {
+  static set store(value: { component: (props: any) => JSX.Element; props: any } | undefined) {
     if (value !== undefined && this._store !== undefined) return;
 
     this._store = value;
