@@ -14,8 +14,6 @@ class RecordListStoreFactory {
       | { type: 'patch' | 'add'; payload: Record | undefined }
       | { type: 'delete'; payload: Pick<Record, 'key'> },
   ) => {
-    console.log(type, payload);
-
     switch (type) {
       case 'patch':
         if (!payload) return store;

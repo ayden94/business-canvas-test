@@ -1,7 +1,7 @@
 import { Checkbox, MenuProps, TableProps } from 'antd';
 import { Label } from '../types/Label';
 import { Record } from '../types/Record';
-import { Key, ReactElement } from 'react';
+import { Key, ReactElement, useState } from 'react';
 import { useRecordListStore } from '../hooks/globalState/RecordList';
 import { DialogStore } from '../components/Dialog/DialogStore';
 import KebabMenu from '../components/Kebab';
@@ -13,7 +13,7 @@ export const getColumnByRecords = <T extends Array<Record>>(
 ): TableProps<Record>['columns'] => {
   const columns: TableProps<Record>['columns'] = [];
 
-  // 추후 전역 상태로 분리
+  // 추후 전역 상태로 분리 가능
   const ColumnList = [
     '이름',
     '주소',
@@ -30,6 +30,19 @@ export const getColumnByRecords = <T extends Array<Record>>(
 
   return columns;
 };
+
+interface IColumnConfig {
+  title: string;
+  dataIndex: string;
+  width?: number;
+  filters?: { text: string; value: string }[];
+  onFilter?: (value: boolean | Key, record: Record) => boolean;
+  render?: (value: string, record: Record, index: number) => ReactElement;
+}
+
+interface Column {
+  exec(key: string, records: Record[]): IColumnConfig;
+}
 
 class ColumnFactory {
   private columnMap: Map<string, new () => Column> = new Map([
@@ -48,19 +61,6 @@ class ColumnFactory {
   }
 }
 
-interface IColumnConfig {
-  title: string;
-  dataIndex: string;
-  width?: number;
-  filters?: { text: string; value: string }[];
-  onFilter?: (value: boolean | Key, record: Record) => boolean;
-  render?: (value: string, record: Record, index: number) => ReactElement;
-}
-
-interface Column {
-  exec(key: string, records: Record[]): IColumnConfig;
-}
-
 class RecordEditKebabColumn implements Column {
   private useRecordListStore = useRecordListStore();
   private items: MenuProps['items'] = [
@@ -77,19 +77,10 @@ class RecordEditKebabColumn implements Column {
   private handleRecordEditMenuClick: (value: string, record: Record) => MenuProps['onClick'] =
     (value: string, record: Record) => (e) => {
       if (e.key === '수정') {
-        DialogStore.store = (
-          <>
-            <Dialog.Title title="레코드 추가" />
-            <RecordForm initValue={record} setFormValues={setFormValues} />
-            <Dialog.Footer
-              onClick={() =>
-                this.useRecordListStore[1]({ type: 'patch', payload: this.useFormValues[0] })
-              }
-            >
-              저장
-            </Dialog.Footer>
-          </>
-        );
+        DialogStore.store = {
+          component: RFC,
+          props: { title: '레코드 수정', type: 'patch', initValue: record },
+        };
       } else if (e.key === '삭제') {
         if (confirm('정말 삭제하시겠습니까?')) {
           this.useRecordListStore[1]({ type: 'delete', payload: { key: record.key } });
@@ -116,16 +107,35 @@ class RecordEditKebabColumn implements Column {
   }
 }
 
+const removeDuplicateInColumnFilterArray = (array: any[], key: string) => {
+  return Array.from(
+    new Set(
+      array
+        .map((data) =>
+          JSON.stringify({
+            text: data[key as keyof Record],
+            value: data[key as keyof Record],
+          }),
+        )
+        .map((item) => JSON.stringify(item)),
+    ),
+  )
+    .map((item) => {
+      return JSON.parse(JSON.parse(item));
+    })
+    .map((item: { text: any; value: any }) => {
+      return { text: String(item['text']), value: String(item['value']) };
+    });
+};
+
 class EmailAgreementColumn implements Column {
   exec(key: string, records: Record[]): IColumnConfig {
     return {
       title: key,
       dataIndex: key,
-      filters: records.map((record: Record) => ({
-        text: String(record[key as keyof Record]),
-        value: String(record[key as keyof Record]),
-      })),
-      onFilter: (value: boolean | Key, record: Record) => record['이름'].includes(value as string),
+      filters: removeDuplicateInColumnFilterArray(records, key),
+      onFilter: (value: boolean | Key, record: Record) =>
+        String(record[key as keyof Record]).includes(value as string),
       render: (text) => <Checkbox checked={text as unknown as boolean} />,
     };
   }
@@ -133,15 +143,41 @@ class EmailAgreementColumn implements Column {
 
 class BasicColumn implements Column {
   exec(key: string, records: Record[]): IColumnConfig {
+    console.log(removeDuplicateInColumnFilterArray(records, key));
     return {
       title: key,
       dataIndex: key,
-      filters: records.map((record: Record) => ({
-        text: String(record[key as keyof Record]),
-        value: String(record[key as keyof Record]),
-      })),
+      filters: removeDuplicateInColumnFilterArray(records, key),
       onFilter: (value: boolean | Key, record: Record) =>
         String(record[key as keyof Record]).includes(value as string),
     };
   }
+}
+
+// TODO: RFC 컴포넌트 분리
+function RFC({
+  title,
+  type,
+  initValue,
+}: {
+  title: string;
+  type: 'patch' | 'add';
+  initValue?: Record;
+}) {
+  const [_, dispatcher] = useRecordListStore();
+  const [formValues, setFormValues] = useState<Record>();
+
+  return (
+    <>
+      <Dialog.Title title={title} />
+      <RecordForm setFormValues={setFormValues} initValue={initValue} />
+      <Dialog.Footer
+        onClick={() => {
+          dispatcher({ type: type, payload: formValues });
+        }}
+      >
+        저장
+      </Dialog.Footer>
+    </>
+  );
 }

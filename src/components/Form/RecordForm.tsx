@@ -16,6 +16,7 @@ export default function RecordForm({
     주소: '',
     가입일: '',
     직업: SELECT_JOB_OPTIONS[0],
+    '이메일 수신 동의': false,
   },
   setFormValues,
 }: {
@@ -101,14 +102,15 @@ function RecordJoinDateInput() {
 
       <DatePicker
         showToday={false}
+        id="가입일"
+        placeholder="가입일"
         getPopupContainer={(trigger) => trigger}
         value={selectJoinDate.value ? dayjs(selectJoinDate.value) : null}
         onChange={(value) =>
           selectJoinDate.onChange({
-            target: { name: '가입일', value: value.toDate() as unknown as string },
+            target: { name: '가입일', value: value ? value.format('YYYY-MM-DD') : '' },
           })
         }
-        placeholder="가입일"
       />
     </div>
   );
@@ -125,6 +127,7 @@ function RecordJobInput() {
       </Label>
 
       <Select
+        id="직업"
         style={{ width: 85 }}
         popupMatchSelectWidth={198}
         getPopupContainer={(trigger) => trigger}
